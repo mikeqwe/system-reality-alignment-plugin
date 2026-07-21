@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here.
 
+## 1.1.0 — 2026-07-21
+
+- Added mandatory reproducibility snapshots with exact revisions, real repository paths, evidence commands, and tool context.
+- Added mechanism-identity checks so independently configured producers, transports, consumers, and acknowledgement paths are not conflated.
+- Added execution-path verification for synchronous calls, retries, swallowed exceptions, compensation, reconciliation direction, feature flags, and compatibility fallbacks.
+- Added explicit storage-role classification for live state, rollback evidence, checkpoints, audit history, source observations, and derived caches.
+- Added a per-handler retry, replay, redelivery, and dead-letter safety gate covering idempotency, deduplication, error propagation, and progress accounting.
+- Added verification rules for quantitative claims, source-file versus runtime-unit counts, version-control provenance, inherited build configuration, and legacy behavior.
+- Replaced impressionistic maturity ranges with a six-dimension rubric; unsupported ratings must be reported as `NOT RATED`.
+- Added an evaluation mode with `USEFUL`, `NEUTRAL`, `HARMFUL`, and `UNKNOWN` classifications, counterfactual requirements, treatment-arm hard-guardrail overrides with separate control-arm baseline reporting, a closed JSON Schema run contract that the summarizer loads as its single source of truth, and a deterministic JSONL summarizer.
+- Expanded the review, repair, and implementation templates, strict artifact validation with per-finding and per-section semantic gates, package validation with schema-to-summarizer contract cross-checks, release contents, and tests to enforce the new requirements.
+
 ## 1.0.0 — 2026-07-21
 
 - Initial dual-compatible Codex and Claude Code plugin.

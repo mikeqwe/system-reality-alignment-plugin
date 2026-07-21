@@ -16,6 +16,7 @@ MODES = {
     "repair": "repair.md",
     "implementation": "implementation.md",
     "operations": "operations.md",
+    "evaluation": "evaluation.md",
     "decision-record": "decision-record.md",
     "data-contract": "data-contract.md",
 }
@@ -30,7 +31,7 @@ def slugify(value: str) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=sorted(MODES))
-    parser.add_argument("--system", required=True, help="System or domain name")
+    parser.add_argument("--system", required=True, help="System, domain, or intervention name")
     parser.add_argument("--output", type=Path, help="Output Markdown path")
     parser.add_argument("--date", default=date.today().isoformat(), help="Document date (YYYY-MM-DD)")
     parser.add_argument("--force", action="store_true", help="Overwrite an existing output file")

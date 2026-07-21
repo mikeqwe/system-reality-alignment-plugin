@@ -14,7 +14,7 @@ from support import copy_project
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE_ROOT = "system-reality-alignment"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 
 def run_builder(output_dir: Path, project: Path = ROOT) -> subprocess.CompletedProcess[str]:
@@ -35,20 +35,25 @@ def expected_common_files() -> set[str]:
         "skills/align-system/assets/templates/data-contract.md",
         "skills/align-system/assets/templates/decision-record.md",
         "skills/align-system/assets/templates/design.md",
+        "skills/align-system/assets/templates/evaluation.md",
         "skills/align-system/assets/templates/implementation.md",
         "skills/align-system/assets/templates/operations.md",
         "skills/align-system/assets/templates/plan.md",
         "skills/align-system/assets/templates/repair.md",
         "skills/align-system/assets/templates/review.md",
+        "skills/align-system/references/analysis-verification.md",
         "skills/align-system/references/core-standard.md",
         "skills/align-system/references/evidence-and-risk.md",
         "skills/align-system/references/mode-design.md",
+        "skills/align-system/references/mode-evaluation.md",
         "skills/align-system/references/mode-implementation.md",
         "skills/align-system/references/mode-operations.md",
         "skills/align-system/references/mode-plan.md",
         "skills/align-system/references/mode-repair.md",
         "skills/align-system/references/mode-review.md",
+        "skills/align-system/schemas/evaluation-run.schema.json",
         "skills/align-system/scripts/new_artifact.py",
+        "skills/align-system/scripts/summarize_evaluations.py",
         "skills/align-system/scripts/validate_artifact.py",
     }
     return {
@@ -76,10 +81,11 @@ class ReleaseBuildTests(unittest.TestCase):
                 expected = common | {f"{ARCHIVE_ROOT}/{manifest}"}
                 with zipfile.ZipFile(archive) as bundle:
                     self.assertEqual(set(bundle.namelist()), expected)
-                    script = bundle.getinfo(
-                        f"{ARCHIVE_ROOT}/skills/align-system/scripts/new_artifact.py"
-                    )
-                    self.assertEqual((script.external_attr >> 16) & 0o777, 0o755)
+                    for script_name in ("new_artifact.py", "summarize_evaluations.py"):
+                        script = bundle.getinfo(
+                            f"{ARCHIVE_ROOT}/skills/align-system/scripts/{script_name}"
+                        )
+                        self.assertEqual((script.external_attr >> 16) & 0o777, 0o755)
 
             checksum_path = output_dir / "SHA256SUMS"
             checksum_lines = checksum_path.read_text(encoding="utf-8").splitlines()

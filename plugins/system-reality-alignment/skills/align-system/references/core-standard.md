@@ -106,6 +106,24 @@ A later statement that supersedes, disputes, or invalidates a prior observation 
 
 A single mutable status field SHOULD NOT be treated as sufficient evidence for all seven categories.
 
+### 5.8 Mechanism boundaries
+
+Independent mechanisms MUST be analyzed independently, even when they share a broker, framework, naming convention, or domain vocabulary.
+
+For every material delivery or execution path, identify:
+
+- purpose and message or command type;
+- producer and call site;
+- channel, topic, queue, API, scheduler, or transaction boundary;
+- configuration source and effective settings;
+- acknowledgement and delivery semantics;
+- retry, timeout, and dead-letter behavior;
+- consumer or handler set;
+- error propagation and compensation path;
+- deduplication, idempotency, and progress-accounting behavior.
+
+A guarantee established for one path MUST NOT be transferred to another without evidence that the relevant producer, channel, consumer, and configuration are the same. Domain events, background jobs, migration work units, and operational commands SHOULD be assumed independent until their mechanism identity is proven.
+
 ## 6. Observation and evidence requirements
 
 Critical observations MUST preserve enough context to evaluate meaning and reliability:
@@ -251,6 +269,19 @@ Record:
 
 A mutable log line alone is not a durable decision record.
 
+### 13.1 Analysis reproducibility
+
+A material architecture or behavior claim MUST be reproducible from the review artifact or an attached evidence bundle. Record:
+
+- the full revision identifier or an explicit reason it is unavailable;
+- actual repository paths rather than shortened logical aliases;
+- the commands, queries, or deterministic transformations behind counts and derived values;
+- the configuration and tool versions that affect the conclusion;
+- the inspected coverage and known exclusions;
+- counterevidence considered and how it was resolved.
+
+Claims about provenance MUST inspect version-control evidence before classifying tracked files as unknown. Claims about dependencies MUST include inherited build configuration and relevant runtime or transitive additions. Claims about implementation counts MUST define the counted unit and must not assume one source file equals one runtime class, endpoint, handler, or registration.
+
 ## 14. Actions and idempotency
 
 The system MUST distinguish requested actions from attempted and completed actions.
@@ -267,6 +298,17 @@ For material side effects, define:
 - reconciliation after uncertain execution.
 
 Exactly-once claims SHOULD be avoided unless the guarantee is demonstrable end to end. Prefer explicit at-least-once delivery with idempotent effects and reconciliation.
+
+Retry, replay, redelivery, or dead-letter recommendations MUST NOT be described as ready changes until every affected handler has been checked for:
+
+- effect idempotency or a durable deduplication key;
+- atomicity between the side effect and the completion marker;
+- correct propagation of failures to the caller or delivery mechanism;
+- progress accounting that cannot advance after an uncommitted or swallowed failure;
+- duplicate, partial, reordered, and repeated-part behavior;
+- a safe recovery and reconciliation path for ambiguous outcomes.
+
+When coverage is partial, the recommendation MUST be conditional and name the unverified handlers. A statement such as “most handlers are safe” is not sufficient evidence for enabling replay over the whole handler set.
 
 ## 15. Outcomes and independent verification
 
@@ -304,6 +346,8 @@ Define:
 - proof that the correction reached downstream consumers.
 
 Reconciliation is not only a financial pattern. It applies to inventory, identity, entitlements, workflow completion, model labels, and external side effects.
+
+The reconciliation design MUST state its direction and driving set. A process that starts from already-existing records in one system cannot detect subjects absent from that starting set. Record which classes of missing, extra, stale, or conflicting records are reachable and which remain blind spots.
 
 ## 17. Observability
 
@@ -410,7 +454,15 @@ Treat these as warning signs:
 - calling logs observability without correlation, semantics, or outcomes;
 - silently overwriting contradictory claims;
 - treating transport success as business success;
-- assuming retries are safe without idempotency;
+- assuming retries are safe without handler-level idempotency, error-propagation, and progress-accounting evidence;
+- applying the configuration or guarantee of one delivery mechanism to a different producer, channel, or consumer path;
+- describing a failure scenario without tracing the reachable execution and compensation path;
+- treating rollback evidence or audit history as the live process state;
+- equating source-file counts with classes, handlers, endpoints, or registrations without checking the counted unit;
+- calling tracked artifacts' provenance unknown without checking version-control history;
+- reporting only direct module dependencies while ignoring inherited build configuration and runtime additions;
+- describing only the preferred storage mode while omitting active compatibility or legacy fallbacks;
+- assigning a maturity range without a dimension-level calculation and operational evidence;
 - enforcing a new invariant before observing real exceptions;
 - backfilling derived state without preserving method and version;
 - measuring model accuracy against labels generated by the same model or rule;
@@ -433,4 +485,8 @@ A system change may claim improved reality alignment only when:
 - late, duplicate, out-of-order, missing, and corrected inputs are handled;
 - rollout, rollback, backfill, and downstream compatibility are addressed;
 - metrics detect recurrence and trigger owned actions;
-- residual uncertainty and risk are documented.
+- residual uncertainty and risk are documented;
+- the analyzed revision, evidence paths, and derived-value commands are reproducible;
+- independent mechanisms have separate identity and guarantee records;
+- retry or replay changes have handler-level safety evidence;
+- maturity claims, when made, show the evaluated dimensions and operational basis.

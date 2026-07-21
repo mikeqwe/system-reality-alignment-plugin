@@ -1,6 +1,6 @@
 {
   "name": "system-reality-tools",
-  "description": "Plugins for designing and operating systems whose models, decisions, and outcomes remain aligned with reality.",
+  "description": "Plugins for designing, reviewing, operating, and evaluating systems whose models, decisions, and outcomes remain aligned with reality.",
   "owner": {
     "name": "Mikhail Sherstiannikov"
   },
@@ -8,8 +8,8 @@
     {
       "name": "system-reality-alignment",
       "source": "./plugins/system-reality-alignment",
-      "description": "Design, review, plan, repair, implement, and operate systems that remain aligned with reality.",
-      "version": "1.0.0"
+      "description": "Design, review, plan, repair, implement, operate, and evaluate systems that remain aligned with reality.",
+      "version": "1.1.0"
     }
   ]
 }

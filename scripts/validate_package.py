@@ -6,11 +6,33 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import re
+import runpy
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "plugins" / "system-reality-alignment"
 SKILL = PLUGIN / "skills" / "align-system"
+
+EVALUATION_REQUIRED_FIELDS = frozenset({
+    "evaluation_id",
+    "task_id",
+    "eligible",
+    "assignment",
+    "activated",
+    "intervention_version",
+    "mode",
+    "model_version",
+    "complexity",
+    "risk_tier",
+    "started_at",
+    "completed_at",
+    "primary_metric",
+    "metric_direction",
+    "metric_value",
+    "outcome_mature",
+    "hard_guardrail_violations",
+    "outcome_source",
+})
 
 
 def load_json(path: Path, errors: list[str]) -> dict:
@@ -44,6 +66,38 @@ def parse_frontmatter(path: Path, errors: list[str]) -> dict[str, str]:
     return values
 
 
+def validate_evaluation_contract(schema: dict, errors: list[str]) -> None:
+    if not schema:
+        return
+    properties = schema.get("properties")
+    required = schema.get("required")
+    if not isinstance(properties, dict) or not isinstance(required, list):
+        errors.append("evaluation run schema must define properties and required fields")
+        return
+    if set(required) != EVALUATION_REQUIRED_FIELDS:
+        errors.append("evaluation run schema must require the complete canonical field set")
+    if schema.get("additionalProperties") is not False:
+        errors.append("evaluation run schema must reject undeclared properties")
+    if not schema.get("allOf"):
+        errors.append("evaluation run schema must conditionally require outcome_source for mature outcomes")
+    timestamp = schema.get("$defs", {}).get("timezoneDateTime", {})
+    if not timestamp.get("pattern"):
+        errors.append("evaluation run schema must enforce timezone-aware timestamp syntax")
+
+    summarizer_path = SKILL / "scripts" / "summarize_evaluations.py"
+    if not summarizer_path.is_file():
+        return
+    try:
+        namespace = runpy.run_path(str(summarizer_path))
+    except (KeyError, OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
+        errors.append(f"cannot load evaluation summarizer contract: {exc}")
+        return
+    if set(required) != set(namespace.get("REQUIRED_FIELDS", ())):
+        errors.append("evaluation schema required fields must match the summarizer contract")
+    if set(properties) != set(namespace.get("ALLOWED_FIELDS", ())):
+        errors.append("evaluation schema properties must match the summarizer contract")
+
+
 def main() -> int:
     errors: list[str] = []
     warnings: list[str] = []
@@ -71,7 +125,7 @@ def main() -> int:
             errors.append(f"manifest mismatch for {field!r}: {codex.get(field)!r} != {claude.get(field)!r}")
 
     expected_name = "system-reality-alignment"
-    expected_version = "1.0.0"
+    expected_version = "1.1.0"
     if codex.get("name") != expected_name:
         errors.append("unexpected plugin name")
     if codex.get("version") != expected_version:
@@ -113,19 +167,26 @@ def main() -> int:
     required = [
         SKILL / "references" / "core-standard.md",
         SKILL / "references" / "evidence-and-risk.md",
+        SKILL / "references" / "analysis-verification.md",
         SKILL / "references" / "mode-design.md",
         SKILL / "references" / "mode-review.md",
         SKILL / "references" / "mode-plan.md",
         SKILL / "references" / "mode-repair.md",
         SKILL / "references" / "mode-implementation.md",
         SKILL / "references" / "mode-operations.md",
+        SKILL / "references" / "mode-evaluation.md",
+        SKILL / "schemas" / "evaluation-run.schema.json",
         SKILL / "scripts" / "new_artifact.py",
         SKILL / "scripts" / "validate_artifact.py",
+        SKILL / "scripts" / "summarize_evaluations.py",
     ]
     required += sorted((SKILL / "assets" / "templates").glob("*.md"))
     for path in required:
         if not path.is_file():
             errors.append(f"missing bundled resource: {path.relative_to(ROOT)}")
+
+    schema = load_json(SKILL / "schemas" / "evaluation-run.schema.json", errors)
+    validate_evaluation_contract(schema, errors)
 
     for path in (SKILL / "scripts").glob("*.py"):
         try:

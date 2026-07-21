@@ -15,9 +15,12 @@ Use the skill to:
 - plan staged improvements;
 - repair incidents and data corruption at the source;
 - implement contracts, invariants, lineage, reconciliation, and observability;
-- define operating controls and adaptation metrics.
+- define operating controls and adaptation metrics;
+- evaluate whether the plugin or another intervention is useful, neutral, harmful, or still unknown.
 
-The skill is instruction-first. Bundled Python scripts only scaffold and validate Markdown artifacts; they do not access the network or modify a system under review. Python is not required to load the skill.
+Material analysis is revision-specific and reproducible. The skill isolates independently configured mechanisms, traces real execution and compensation paths, verifies counts and inherited dependencies, classifies storage roles, checks compatibility fallbacks, and requires per-handler replay-safety evidence before recommending retry or redelivery.
+
+The skill is instruction-first. Bundled Python scripts scaffold and validate Markdown artifacts and summarize local JSONL evaluation records. They do not access the network or modify a system under review. Python is not required to load the skill.
 
 ## Invocation
 
