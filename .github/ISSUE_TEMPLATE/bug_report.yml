@@ -1,0 +1,46 @@
+name: Bug report
+description: Report reproducible incorrect behavior in the plugin, templates, or helper scripts.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: Do not include secrets or private repository content. Report vulnerabilities through the private security form.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened, and what decision or workflow did it affect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide the smallest reproducible prompt, command, or artifact.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include Codex or Claude Code version, operating system, plugin version, and Python version when relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation output
+      description: Paste relevant validator or test output with sensitive data removed.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed secrets, personal data, and private repository content.
+          required: true

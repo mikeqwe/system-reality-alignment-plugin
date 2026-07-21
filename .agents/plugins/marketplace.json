@@ -1,0 +1,20 @@
+{
+  "name": "system-reality-tools",
+  "interface": {
+    "displayName": "System Reality Tools"
+  },
+  "plugins": [
+    {
+      "name": "system-reality-alignment",
+      "source": {
+        "source": "local",
+        "path": "./plugins/system-reality-alignment"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
