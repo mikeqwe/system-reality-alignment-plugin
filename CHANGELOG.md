@@ -11,8 +11,8 @@ All notable changes to this project are documented here.
 - Added a per-handler retry, replay, redelivery, and dead-letter safety gate covering idempotency, deduplication, error propagation, and progress accounting.
 - Added verification rules for quantitative claims, source-file versus runtime-unit counts, version-control provenance, inherited build configuration, and legacy behavior.
 - Replaced impressionistic maturity ranges with a six-dimension rubric; unsupported ratings must be reported as `NOT RATED`.
-- Added an evaluation mode with `USEFUL`, `NEUTRAL`, `HARMFUL`, and `UNKNOWN` classifications, counterfactual requirements, hard guardrails, a JSON Schema run contract, and a deterministic JSONL summarizer.
-- Expanded review templates, strict artifact validation, package validation, release contents, and tests to enforce the new requirements.
+- Added an evaluation mode with `USEFUL`, `NEUTRAL`, `HARMFUL`, and `UNKNOWN` classifications, counterfactual requirements, treatment-arm hard-guardrail overrides with separate control-arm baseline reporting, a closed JSON Schema run contract that the summarizer loads as its single source of truth, and a deterministic JSONL summarizer.
+- Expanded the review, repair, and implementation templates, strict artifact validation with per-finding and per-section semantic gates, package validation with schema-to-summarizer contract cross-checks, release contents, and tests to enforce the new requirements.
 
 ## 1.0.0 — 2026-07-21
 
