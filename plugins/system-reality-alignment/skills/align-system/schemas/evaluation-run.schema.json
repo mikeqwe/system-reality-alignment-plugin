@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mikeqwe/system-reality-alignment-plugin/blob/main/plugins/system-reality-alignment/skills/align-system/schemas/evaluation-run.schema.json",
+  "title": "System Reality Alignment Evaluation Run",
+  "description": "One completed eligible task used to evaluate an intervention, workflow, agent behavior, or plugin version.",
+  "type": "object",
+  "required": [
+    "evaluation_id",
+    "task_id",
+    "eligible",
+    "assignment",
+    "activated",
+    "intervention_version",
+    "mode",
+    "model_version",
+    "complexity",
+    "risk_tier",
+    "started_at",
+    "completed_at",
+    "primary_metric",
+    "metric_direction",
+    "metric_value",
+    "outcome_mature",
+    "hard_guardrail_violations",
+    "outcome_source"
+  ],
+  "properties": {
+    "evaluation_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier for one evaluation protocol and assignment population."
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eligible": {
+      "type": "boolean"
+    },
+    "assignment": {
+      "type": "string",
+      "enum": [
+        "control",
+        "treatment"
+      ]
+    },
+    "activated": {
+      "type": "boolean"
+    },
+    "intervention_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Candidate intervention or plugin version being evaluated. Record the same value for control and treatment assignments."
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "design",
+        "review",
+        "plan",
+        "repair",
+        "implementation",
+        "operations",
+        "evaluation",
+        "other"
+      ]
+    },
+    "model_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tool_versions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "repository_revision": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "complexity": {
+      "type": "string",
+      "minLength": 1
+    },
+    "risk_tier": {
+      "type": "string",
+      "minLength": 1
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "primary_metric": {
+      "type": "string",
+      "minLength": 1
+    },
+    "metric_direction": {
+      "type": "string",
+      "enum": [
+        "higher_is_better",
+        "lower_is_better"
+      ]
+    },
+    "metric_value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "outcome_mature": {
+      "type": "boolean"
+    },
+    "human_review_minutes": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "cost_units": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "hard_guardrail_violations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "outcome_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reviewer_blinded": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "exclusion_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

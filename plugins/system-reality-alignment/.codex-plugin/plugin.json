@@ -1,7 +1,7 @@
 {
   "name": "system-reality-alignment",
-  "version": "1.0.0",
-  "description": "Design, review, plan, repair, implement, and operate real-world systems with traceable observations, explicit semantics, verifiable decisions, and closed feedback loops.",
+  "version": "1.1.0",
+  "description": "Design, review, plan, repair, implement, operate, and evaluate real-world systems with reproducible evidence, explicit semantics, verifiable decisions, and closed feedback loops.",
   "author": {
     "name": "Mikhail Sherstiannikov",
     "url": "https://github.com/mikeqwe"
@@ -15,13 +15,14 @@
     "observability",
     "feedback-loops",
     "system-design",
-    "reliability"
+    "reliability",
+    "evaluation"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "System Reality Alignment",
-    "shortDescription": "Align system models and decisions with reality",
-    "longDescription": "A rigorous workflow for designing, reviewing, planning, repairing, implementing, and operating software and socio-technical systems using explicit observations, semantics, invariants, lineage, reconciliation, and outcome feedback.",
+    "shortDescription": "Align and evaluate system models against reality",
+    "longDescription": "A rigorous workflow for designing, reviewing, planning, repairing, implementing, operating, and evaluating software and socio-technical systems using reproducible evidence, mechanism isolation, explicit observations, semantics, invariants, lineage, reconciliation, and outcome feedback.",
     "developerName": "Mikhail Sherstiannikov",
     "category": "Productivity",
     "capabilities": [
@@ -29,8 +30,9 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Use System Reality Alignment to review this system and produce evidence-backed findings.",
-      "Use System Reality Alignment to design a traceable decision and feedback loop for this workflow."
+      "Use System Reality Alignment to review this system and produce reproducible evidence-backed findings.",
+      "Use System Reality Alignment to design a traceable decision and feedback loop for this workflow.",
+      "Use System Reality Alignment to evaluate whether this intervention is useful, neutral, harmful, or still unknown."
     ]
   }
 }

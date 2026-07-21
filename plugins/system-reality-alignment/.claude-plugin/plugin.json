@@ -1,8 +1,8 @@
 {
   "name": "system-reality-alignment",
   "displayName": "System Reality Alignment",
-  "version": "1.0.0",
-  "description": "Design, review, plan, repair, implement, and operate real-world systems with traceable observations, explicit semantics, verifiable decisions, and closed feedback loops.",
+  "version": "1.1.0",
+  "description": "Design, review, plan, repair, implement, operate, and evaluate real-world systems with reproducible evidence, explicit semantics, verifiable decisions, and closed feedback loops.",
   "author": {
     "name": "Mikhail Sherstiannikov",
     "url": "https://github.com/mikeqwe"
@@ -16,7 +16,8 @@
     "observability",
     "feedback-loops",
     "system-design",
-    "reliability"
+    "reliability",
+    "evaluation"
   ],
   "skills": "./skills/"
 }

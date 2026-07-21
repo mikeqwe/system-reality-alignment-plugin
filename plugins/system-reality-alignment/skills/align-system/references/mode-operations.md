@@ -16,6 +16,7 @@ Operate the system as a learning loop: detect divergence, reconcile claims with 
 8. Decide whether to contain, repair, change a rule, improve observation, or accept a bounded risk.
 9. Update contracts, invariants, runbooks, and ownership when recurring patterns appear.
 10. Verify whether prior improvements reduced recurrence and correction latency.
+11. When judging an intervention or the plugin itself, switch to `mode-evaluation.md`; preserve a control or defensible counterfactual and classify insufficient evidence as `UNKNOWN`.
 
 ## Required deliverable
 

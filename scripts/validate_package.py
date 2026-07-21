@@ -71,7 +71,7 @@ def main() -> int:
             errors.append(f"manifest mismatch for {field!r}: {codex.get(field)!r} != {claude.get(field)!r}")
 
     expected_name = "system-reality-alignment"
-    expected_version = "1.0.0"
+    expected_version = "1.1.0"
     if codex.get("name") != expected_name:
         errors.append("unexpected plugin name")
     if codex.get("version") != expected_version:
@@ -113,19 +113,29 @@ def main() -> int:
     required = [
         SKILL / "references" / "core-standard.md",
         SKILL / "references" / "evidence-and-risk.md",
+        SKILL / "references" / "analysis-verification.md",
         SKILL / "references" / "mode-design.md",
         SKILL / "references" / "mode-review.md",
         SKILL / "references" / "mode-plan.md",
         SKILL / "references" / "mode-repair.md",
         SKILL / "references" / "mode-implementation.md",
         SKILL / "references" / "mode-operations.md",
+        SKILL / "references" / "mode-evaluation.md",
+        SKILL / "schemas" / "evaluation-run.schema.json",
         SKILL / "scripts" / "new_artifact.py",
         SKILL / "scripts" / "validate_artifact.py",
+        SKILL / "scripts" / "summarize_evaluations.py",
     ]
     required += sorted((SKILL / "assets" / "templates").glob("*.md"))
     for path in required:
         if not path.is_file():
             errors.append(f"missing bundled resource: {path.relative_to(ROOT)}")
+
+    schema = load_json(SKILL / "schemas" / "evaluation-run.schema.json", errors)
+    if schema:
+        for field in ("evaluation_id", "assignment", "intervention_version"):
+            if field not in schema.get("required", []):
+                errors.append(f"evaluation run schema must require {field}")
 
     for path in (SKILL / "scripts").glob("*.py"):
         try:
