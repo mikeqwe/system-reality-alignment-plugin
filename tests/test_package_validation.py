@@ -24,6 +24,18 @@ def run_validator(project: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
+def schema_path(project: Path) -> Path:
+    return (
+        project
+        / "plugins"
+        / "system-reality-alignment"
+        / "skills"
+        / "align-system"
+        / "schemas"
+        / "evaluation-run.schema.json"
+    )
+
+
 class PackageValidationTests(unittest.TestCase):
     def test_missing_marketplace_description_fails(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -92,34 +104,17 @@ class PackageValidationTests(unittest.TestCase):
     def test_missing_evaluation_schema_fails(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             project = copy_project(Path(temp_dir))
-            path = (
-                project
-                / "plugins"
-                / "system-reality-alignment"
-                / "skills"
-                / "align-system"
-                / "schemas"
-                / "evaluation-run.schema.json"
-            )
-            path.unlink()
+            schema_path(project).unlink()
 
             result = run_validator(project)
 
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("missing bundled resource", result.stderr)
 
-    def test_evaluation_schema_requires_versioned_assignment_identity(self):
+    def test_evaluation_schema_required_fields_must_match_consumer(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             project = copy_project(Path(temp_dir))
-            path = (
-                project
-                / "plugins"
-                / "system-reality-alignment"
-                / "skills"
-                / "align-system"
-                / "schemas"
-                / "evaluation-run.schema.json"
-            )
+            path = schema_path(project)
             schema = json.loads(path.read_text(encoding="utf-8"))
             schema["required"].remove("evaluation_id")
             path.write_text(json.dumps(schema), encoding="utf-8")
@@ -127,7 +122,33 @@ class PackageValidationTests(unittest.TestCase):
             result = run_validator(project)
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("evaluation run schema must require evaluation_id", result.stderr)
+            self.assertIn("must require the complete canonical field set", result.stderr)
+
+    def test_evaluation_schema_must_reject_undeclared_properties(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project = copy_project(Path(temp_dir))
+            path = schema_path(project)
+            schema = json.loads(path.read_text(encoding="utf-8"))
+            schema["additionalProperties"] = True
+            path.write_text(json.dumps(schema), encoding="utf-8")
+
+            result = run_validator(project)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("must reject undeclared properties", result.stderr)
+
+    def test_evaluation_schema_must_enforce_timezone_timestamp(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project = copy_project(Path(temp_dir))
+            path = schema_path(project)
+            schema = json.loads(path.read_text(encoding="utf-8"))
+            schema["$defs"]["timezoneDateTime"].pop("pattern")
+            path.write_text(json.dumps(schema), encoding="utf-8")
+
+            result = run_validator(project)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("must enforce timezone-aware timestamp syntax", result.stderr)
 
 
 if __name__ == "__main__":

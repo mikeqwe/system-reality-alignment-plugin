@@ -56,7 +56,10 @@ def expected_common_files() -> set[str]:
         "skills/align-system/scripts/summarize_evaluations.py",
         "skills/align-system/scripts/validate_artifact.py",
     }
-    return {f"{ARCHIVE_ROOT}/{relative}" for relative in relative_files}
+    return {
+        f"{ARCHIVE_ROOT}/{relative}"
+        for relative in relative_files
+    }
 
 
 class ReleaseBuildTests(unittest.TestCase):
@@ -93,13 +96,22 @@ class ReleaseBuildTests(unittest.TestCase):
             }
             self.assertEqual(set(checksums), {archive.name for archive in archives.values()})
             for archive in archives.values():
-                self.assertEqual(checksums[archive.name], hashlib.sha256(archive.read_bytes()).hexdigest())
+                self.assertEqual(
+                    checksums[archive.name],
+                    hashlib.sha256(archive.read_bytes()).hexdigest(),
+                )
 
     def test_build_rejects_mismatched_manifest_versions(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             project = copy_project(temp_path)
-            manifest_path = project / "plugins" / "system-reality-alignment" / ".claude-plugin" / "plugin.json"
+            manifest_path = (
+                project
+                / "plugins"
+                / "system-reality-alignment"
+                / ".claude-plugin"
+                / "plugin.json"
+            )
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             manifest["version"] = "9.9.9"
             manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
@@ -114,7 +126,13 @@ class ReleaseBuildTests(unittest.TestCase):
             temp_path = Path(temp_dir)
             project = copy_project(temp_path)
             for platform in (".claude-plugin", ".codex-plugin"):
-                manifest_path = project / "plugins" / "system-reality-alignment" / platform / "plugin.json"
+                manifest_path = (
+                    project
+                    / "plugins"
+                    / "system-reality-alignment"
+                    / platform
+                    / "plugin.json"
+                )
                 manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
                 manifest["version"] = "../bad"
                 manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
@@ -128,7 +146,13 @@ class ReleaseBuildTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             project = copy_project(temp_path)
-            manifest_path = project / "plugins" / "system-reality-alignment" / ".codex-plugin" / "plugin.json"
+            manifest_path = (
+                project
+                / "plugins"
+                / "system-reality-alignment"
+                / ".codex-plugin"
+                / "plugin.json"
+            )
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             manifest["skills"] = "./missing-skills/"
             manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
@@ -139,7 +163,10 @@ class ReleaseBuildTests(unittest.TestCase):
             self.assertIn("archive manifest path is missing", result.stderr)
 
     def test_build_is_reproducible(self):
-        with tempfile.TemporaryDirectory() as first_dir, tempfile.TemporaryDirectory() as second_dir:
+        with (
+            tempfile.TemporaryDirectory() as first_dir,
+            tempfile.TemporaryDirectory() as second_dir,
+        ):
             first = Path(first_dir) / "dist"
             second = Path(second_dir) / "dist"
 
@@ -165,7 +192,13 @@ class ReleaseBuildTests(unittest.TestCase):
             original = {path.name: path.read_bytes() for path in output_dir.iterdir()}
 
             project = copy_project(temp_path)
-            manifest_path = project / "plugins" / "system-reality-alignment" / ".codex-plugin" / "plugin.json"
+            manifest_path = (
+                project
+                / "plugins"
+                / "system-reality-alignment"
+                / ".codex-plugin"
+                / "plugin.json"
+            )
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             manifest["skills"] = "./missing-skills/"
             manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
@@ -173,7 +206,10 @@ class ReleaseBuildTests(unittest.TestCase):
             result = run_builder(output_dir, project)
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertEqual({path.name: path.read_bytes() for path in output_dir.iterdir()}, original)
+            self.assertEqual(
+                {path.name: path.read_bytes() for path in output_dir.iterdir()},
+                original,
+            )
 
 
 if __name__ == "__main__":

@@ -41,14 +41,26 @@
 
 ## Guardrails and Stop Conditions
 
+- **Hard guardrails:**
+- **Treatment-arm classification rule:** Any treatment-arm hard guardrail event conservatively classifies the segment as `HARMFUL`.
+- **Control-arm handling:** Report control-arm events separately as baseline risk; they do not by themselves classify the intervention as harmful, but may invalidate causal interpretation.
+- **Stop conditions:**
+
 ## Data Quality and Outcome Maturity
+
+- **Outcome maturity:**
+- **Independent outcome source:**
+- **Missingness and exclusions:**
+- **Assignment contamination or non-compliance:**
 
 ## Results by Segment
 
-| Segment | Control n | Treatment n | Control result | Treatment result | Normalized effect | Uncertainty interval | Outcome mature | Classification |
-|---|---:|---:|---:|---:|---:|---|---|---|
+| Segment | Control n | Treatment n | Control result | Treatment result | Normalized effect | Uncertainty interval | Outcome mature | Guardrails C/T | Classification |
+|---|---:|---:|---:|---:|---:|---|---|---:|---|
 
 ## Guardrail Events and Failure Modes
+
+Separate control-arm baseline events from treatment-arm events. Record evidence, attribution limits, and any effect on evaluation validity.
 
 ## Classification
 

@@ -113,7 +113,7 @@ python3 plugins/system-reality-alignment/skills/align-system/scripts/validate_ar
   docs/system-reality/payments-review.md --strict
 ```
 
-An untouched scaffold is intentionally incomplete and fails strict validation.
+An untouched scaffold is intentionally incomplete and fails strict validation. The same strict validator enforces reproducibility, mechanism/storage inventories, and retry/replay applicability for `repair` and `implementation` artifacts.
 
 ## Evaluate plugin or intervention impact
 
@@ -136,7 +136,7 @@ python3 plugins/system-reality-alignment/skills/align-system/scripts/summarize_e
   --minimum-samples 5
 ```
 
-The run-record contract is `plugins/system-reality-alignment/skills/align-system/schemas/evaluation-run.schema.json`. Hard guardrail violations override an average metric improvement.
+The closed run-record contract is `plugins/system-reality-alignment/skills/align-system/schemas/evaluation-run.schema.json`. Treatment-arm hard guardrail events override an average metric improvement. Control-arm events are reported separately as baseline risk and may invalidate causal interpretation without automatically classifying the intervention as harmful.
 
 ## Validate and build
 
