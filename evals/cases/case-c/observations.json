@@ -1,0 +1,17 @@
+{
+  "cohort": "2026-01-01 eligible jobs; report cutoff 2026-01-03",
+  "eligible_jobs": 100,
+  "materialized_jobs": 80,
+  "completed_jobs": 60,
+  "marked_success_by_automation": 60,
+  "unmaterialized_jobs": 20,
+  "pending_materialized_jobs": 20,
+  "independent_audit": {
+    "selection": "non-random convenience sample of completed jobs",
+    "audited": 10,
+    "confirmed_success": 7,
+    "confirmed_failure": 3
+  },
+  "dashboard": "marked_success_by_automation / completed_jobs",
+  "owner_of_unresolved_jobs": null
+}

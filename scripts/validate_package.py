@@ -1,214 +1,111 @@
-#!/usr/bin/env python3
-"""Validate dual plugin manifests, marketplace entries, skill metadata, and bundled resources."""
-
-from __future__ import annotations
-
+"""Offline repository-owned structural checks; not a model or truth evaluator."""
 import json
-from pathlib import Path
 import re
-import runpy
-import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PLUGIN = ROOT / "plugins" / "system-reality-alignment"
-SKILL = PLUGIN / "skills" / "align-system"
-
-EVALUATION_REQUIRED_FIELDS = frozenset({
-    "evaluation_id",
-    "task_id",
-    "eligible",
-    "assignment",
-    "activated",
-    "intervention_version",
-    "mode",
-    "model_version",
-    "complexity",
-    "risk_tier",
-    "started_at",
-    "completed_at",
-    "primary_metric",
-    "metric_direction",
-    "metric_value",
-    "outcome_mature",
-    "hard_guardrail_violations",
-    "outcome_source",
-})
+PLUGIN = Path("plugins/system-reality-alignment")
+REFERENCE_NAMES = {"semantics.md", "mechanisms.md", "interventions.md", "examples.md"}
 
 
-def load_json(path: Path, errors: list[str]) -> dict:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except FileNotFoundError:
-        errors.append(f"missing file: {path.relative_to(ROOT)}")
-    except json.JSONDecodeError as exc:
-        errors.append(f"invalid JSON in {path.relative_to(ROOT)}: {exc}")
-    return {}
-
-
-def parse_frontmatter(path: Path, errors: list[str]) -> dict[str, str]:
-    if not path.is_file():
-        errors.append(f"missing file: {path.relative_to(ROOT)}")
-        return {}
-    text = path.read_text(encoding="utf-8")
-    match = re.match(r"\A---\s*\n(.*?)\n---\s*\n", text, re.DOTALL)
-    if not match:
-        errors.append(f"missing YAML frontmatter: {path.relative_to(ROOT)}")
-        return {}
-    values: dict[str, str] = {}
-    for line in match.group(1).splitlines():
-        if not line.strip() or line.lstrip().startswith("#"):
-            continue
-        if ":" not in line:
-            errors.append(f"unsupported frontmatter line in {path.relative_to(ROOT)}: {line}")
-            continue
-        key, value = line.split(":", 1)
-        values[key.strip()] = value.strip()
-    return values
-
-
-def validate_evaluation_contract(schema: dict, errors: list[str]) -> None:
-    if not schema:
-        return
-    properties = schema.get("properties")
-    required = schema.get("required")
-    if not isinstance(properties, dict) or not isinstance(required, list):
-        errors.append("evaluation run schema must define properties and required fields")
-        return
-    if set(required) != EVALUATION_REQUIRED_FIELDS:
-        errors.append("evaluation run schema must require the complete canonical field set")
-    if schema.get("additionalProperties") is not False:
-        errors.append("evaluation run schema must reject undeclared properties")
-    if not schema.get("allOf"):
-        errors.append("evaluation run schema must conditionally require outcome_source for mature outcomes")
-    timestamp = schema.get("$defs", {}).get("timezoneDateTime", {})
-    if not timestamp.get("pattern"):
-        errors.append("evaluation run schema must enforce timezone-aware timestamp syntax")
-
-    summarizer_path = SKILL / "scripts" / "summarize_evaluations.py"
-    if not summarizer_path.is_file():
-        return
-    try:
-        namespace = runpy.run_path(str(summarizer_path))
-    except (KeyError, OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
-        errors.append(f"cannot load evaluation summarizer contract: {exc}")
-        return
-    if set(required) != set(namespace.get("REQUIRED_FIELDS", ())):
-        errors.append("evaluation schema required fields must match the summarizer contract")
-    if set(properties) != set(namespace.get("ALLOWED_FIELDS", ())):
-        errors.append("evaluation schema properties must match the summarizer contract")
-
-
-def main() -> int:
-    errors: list[str] = []
-    warnings: list[str] = []
-
-    codex = load_json(PLUGIN / ".codex-plugin" / "plugin.json", errors)
-    claude = load_json(PLUGIN / ".claude-plugin" / "plugin.json", errors)
-    codex_market = load_json(ROOT / ".agents" / "plugins" / "marketplace.json", errors)
-    claude_market = load_json(ROOT / ".claude-plugin" / "marketplace.json", errors)
-
-    if not str(claude_market.get("description", "")).strip():
-        errors.append("Claude marketplace description is required")
-
-    for field in (
-        "name",
-        "version",
-        "description",
-        "author",
-        "homepage",
-        "repository",
-        "license",
-        "keywords",
-        "skills",
-    ):
-        if codex.get(field) != claude.get(field):
-            errors.append(f"manifest mismatch for {field!r}: {codex.get(field)!r} != {claude.get(field)!r}")
-
-    expected_name = "system-reality-alignment"
-    expected_version = "1.1.0"
-    if codex.get("name") != expected_name:
-        errors.append("unexpected plugin name")
-    if codex.get("version") != expected_version:
-        errors.append(f"release version must be {expected_version}")
-
-    if codex.get("skills") != "./skills/":
-        errors.append("skills path must be ./skills/")
-
-    expected_publisher = {
-        "author": {
-            "name": "Mikhail Sherstiannikov",
-            "url": "https://github.com/mikeqwe",
-        },
-        "homepage": "https://github.com/mikeqwe/system-reality-alignment-plugin#readme",
-        "repository": "https://github.com/mikeqwe/system-reality-alignment-plugin",
-    }
-    if any(codex.get(field) != value or claude.get(field) != value for field, value in expected_publisher.items()):
-        errors.append("publisher metadata must match the public repository")
-
-    for market, label in ((codex_market, "Codex"), (claude_market, "Claude")):
-        entries = market.get("plugins", [])
-        if not any(entry.get("name") == expected_name for entry in entries):
-            errors.append(f"{label} marketplace does not list {expected_name}")
-
-    claude_entry = next(
-        (entry for entry in claude_market.get("plugins", []) if entry.get("name") == expected_name),
-        {},
-    )
-    if claude_entry.get("version") != codex.get("version"):
-        errors.append("Claude marketplace version must match plugin version")
-
-    metadata = parse_frontmatter(SKILL / "SKILL.md", errors)
-    if metadata.get("name") != "align-system":
-        errors.append("skill name must be align-system")
-    description = metadata.get("description", "")
-    if len(description) < 80:
-        errors.append("skill description is too short for reliable discovery")
-
-    required = [
-        SKILL / "references" / "core-standard.md",
-        SKILL / "references" / "evidence-and-risk.md",
-        SKILL / "references" / "analysis-verification.md",
-        SKILL / "references" / "mode-design.md",
-        SKILL / "references" / "mode-review.md",
-        SKILL / "references" / "mode-plan.md",
-        SKILL / "references" / "mode-repair.md",
-        SKILL / "references" / "mode-implementation.md",
-        SKILL / "references" / "mode-operations.md",
-        SKILL / "references" / "mode-evaluation.md",
-        SKILL / "schemas" / "evaluation-run.schema.json",
-        SKILL / "scripts" / "new_artifact.py",
-        SKILL / "scripts" / "validate_artifact.py",
-        SKILL / "scripts" / "summarize_evaluations.py",
-    ]
-    required += sorted((SKILL / "assets" / "templates").glob("*.md"))
-    for path in required:
-        if not path.is_file():
-            errors.append(f"missing bundled resource: {path.relative_to(ROOT)}")
-
-    schema = load_json(SKILL / "schemas" / "evaluation-run.schema.json", errors)
-    validate_evaluation_contract(schema, errors)
-
-    for path in (SKILL / "scripts").glob("*.py"):
+def validate_plugin(plugin: Path, target: str | None = None) -> list[str]:
+    errors = []
+    manifests = [plugin / "plugin.json"]
+    platforms = [target] if target else ["codex", "claude"]
+    manifests += [plugin / f".{p}-plugin/plugin.json" for p in platforms]
+    versions = set()
+    for path in manifests:
         try:
-            compile(path.read_text(encoding="utf-8"), str(path), "exec")
-        except SyntaxError as exc:
-            errors.append(f"Python compile failure in {path.relative_to(ROOT)}: {exc.msg}")
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("manifest must be an object")
+            if data.get("name") != "system-reality-alignment":
+                errors.append(f"wrong plugin name: {path}")
+            version = data.get("version")
+            if not isinstance(version, str) or not re.fullmatch(r"\d+\.\d+\.\d+", version):
+                errors.append(f"invalid version: {path}")
+            else:
+                versions.add(version)
+            if not isinstance(data.get("description"), str) or not data["description"]:
+                errors.append(f"missing description: {path}")
+            if any(k in data for k in ("hooks", "mcpServers", "agents", "apps")):
+                errors.append(f"unexpected runtime component: {path}")
+        except (OSError, ValueError) as exc:
+            errors.append(f"invalid manifest {path}: {exc}")
+    if len(versions) != 1:
+        errors.append("manifest versions differ or are missing")
+    skill = plugin / "skills/align-system/SKILL.md"
+    try:
+        text = skill.read_text(encoding="utf-8")
+        front = re.match(r"\A---\n(.*?)\n---\n", text, re.S)
+        if not front:
+            errors.append("missing skill frontmatter")
+        else:
+            lines = front.group(1).splitlines()
+            keys = [line.partition(":")[0] for line in lines]
+            if keys != ["name", "description"] or lines[0] != "name: align-system":
+                errors.append("shared frontmatter must contain only name and description")
+            if len(lines) != 2 or len(lines[-1].partition(":")[2].split()) > 55:
+                errors.append("skill description exceeds discovery budget")
+        if len(text.split()) > 950:
+            errors.append("root skill exceeds 950-word review budget")
+        refs = skill.parent / "references"
+        if {p.name for p in refs.glob("*.md")} != REFERENCE_NAMES:
+            errors.append("reference inventory differs")
+    except OSError as exc:
+        errors.append(f"missing skill: {exc}")
+    allowed = {"plugin.json", ".codex-plugin/plugin.json", ".claude-plugin/plugin.json", "README.md", "LICENSE", "skills/align-system/SKILL.md"}
+    allowed |= {f"skills/align-system/references/{name}" for name in REFERENCE_NAMES}
+    for path in plugin.rglob("*"):
+        if path.is_symlink():
+            errors.append(f"symlink in distributable: {path}")
+        if path.is_file() and path.relative_to(plugin).as_posix() not in allowed:
+            errors.append(f"unexpected distributable file: {path}")
+    if target:
+        other = "claude" if target == "codex" else "codex"
+        if (plugin / f".{other}-plugin").exists():
+            errors.append("foreign platform manifest in target archive")
+    for name in ("README.md", "LICENSE"):
+        if not (plugin / name).is_file():
+            errors.append(f"missing {name}")
+    return errors
 
-    for path in ROOT.rglob("*.md"):
+
+def validate(root: Path = ROOT) -> list[str]:
+    plugin = root / PLUGIN
+    errors = validate_plugin(plugin)
+    # Relative Markdown links in our own package and authoring docs must resolve.
+    documents = list(root.glob("*.md"))
+    for base in (plugin, root / "docs", root / "evals"):
+        documents.extend(base.rglob("*.md"))
+    for path in documents:
         text = path.read_text(encoding="utf-8")
-        if "\r\n" in text:
-            warnings.append(f"CRLF line endings: {path.relative_to(ROOT)}")
-
-    for item in errors:
-        print(f"ERROR: {item}", file=sys.stderr)
-    for item in warnings:
-        print(f"WARNING: {item}", file=sys.stderr)
-    if errors:
-        print(f"package invalid: {len(errors)} error(s)", file=sys.stderr)
-        return 1
-    print("package valid")
-    return 0
+        for link in re.findall(r"\[[^\]]*\]\(([^)]+)\)", text):
+            if "://" in link or link.startswith("#"):
+                continue
+            dest = (path.parent / link.split("#")[0]).resolve()
+            if not dest.is_relative_to(root.resolve()) or not dest.exists():
+                errors.append(f"broken/escaping link: {path}: {link}")
+    for name in (".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"):
+        try:
+            data = json.loads((root / name).read_text(encoding="utf-8"))
+            entry = data["plugins"][0]
+            source = entry["source"]
+            source = source["path"] if isinstance(source, dict) else source
+            if data["name"] != "system-reality-tools" or entry["name"] != "system-reality-alignment" or source != "./plugins/system-reality-alignment":
+                errors.append(f"incorrect marketplace mapping: {name}")
+            if name.startswith(".agents") and entry.get("policy") != {"installation": "AVAILABLE", "authentication": "ON_INSTALL"}:
+                errors.append("incorrect Codex marketplace policy")
+            if name.startswith(".claude"):
+                version = json.loads((plugin / "plugin.json").read_text())["version"]
+                if entry.get("version") != version:
+                    errors.append("marketplace version mismatch")
+        except (OSError, ValueError, KeyError, TypeError, IndexError) as exc:
+            errors.append(f"invalid marketplace {name}: {exc}")
+    return errors
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    problems = validate()
+    print("\n".join(problems) if problems else "Package structure OK (not behavioral validation).")
+    raise SystemExit(bool(problems))

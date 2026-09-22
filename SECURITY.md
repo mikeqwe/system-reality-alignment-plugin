@@ -14,4 +14,4 @@ https://github.com/mikeqwe/system-reality-alignment-plugin/security/advisories/n
 
 Include the affected version, reproduction steps, impact, and the smallest safe proof of concept. Reports are reviewed on a best-effort basis; remediation details will be coordinated privately before disclosure.
 
-The plugin contains instructions and deterministic local Python helpers. It does not bundle network access, MCP servers, background processes, or lifecycle hooks.
+The installed v2 plugin contains only instructions. Developer and evaluation helpers are outside the runtime package. It does not bundle network access, MCP servers, background processes, or lifecycle hooks. Run generated candidate code only in an appropriately isolated, disposable environment.

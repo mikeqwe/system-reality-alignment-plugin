@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## 2.0.0 — 2026-09-22
+
+- Rebuilt the skill from scratch around the original system-to-reality feedback loop, with Astra/Codex and Fable/Claude Code as target environments.
+- Replaced mandatory multi-document/mode procedures with a compact task-driven skill and four relevance-loaded references.
+- Preserved mechanism-specific evidence, authority/time/correction semantics, per-effect retry safety, reconciliation populations, and outcome verification.
+- Removed v1 templates, artifact-generation/validation scripts, maturity machinery, and runtime evaluation schema/summarizer. Existing generated documents are unaffected; old code remains in Git history.
+- Added a portable root plugin manifest while retaining version-aligned Codex/Claude compatibility manifests and marketplace identities.
+- Added fresh offline package checks, deterministic archive validation, isolated evaluation exports, six synthetic regression tasks, evaluator-only criteria, and executable projection contract checks.
+- Added an explicit real-task comparison protocol and separated structural/fixture results from unperformed native Astra/Fable behavioral evaluation.
+
 ## 1.1.0 — 2026-07-21
 
 - Added mandatory reproducibility snapshots with exact revisions, real repository paths, evidence commands, and tool context.
