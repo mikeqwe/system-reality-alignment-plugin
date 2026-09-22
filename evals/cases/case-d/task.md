@@ -1,0 +1,1 @@
+Design a minimal account-provisioning workflow from requirements.md. Give a model, key failure behavior, acceptance checks, and a feasible feedback loop. This is a greenfield design, not an implementation request. There is no code, production baseline, or additional provider documentation available.

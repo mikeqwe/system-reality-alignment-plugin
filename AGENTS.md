@@ -1,38 +1,15 @@
-# Repository instructions
+# Repository guidance
 
-This repository packages one cross-platform Agent Skill for Codex and Claude Code.
+This repository ships an instruction-only skill, not an agent runtime. Preserve the domain goal: improve how a system observes, represents, acts on, and corrects against reality. Do not replace it with generic agent self-verification.
 
-## Change discipline
+Keep the root skill small and its trigger narrow. References are selected by relevance, not a mandatory reading list. Keep all three plugin manifests on the same version; shared skill frontmatter uses only `name` and `description`.
 
-- Keep `plugins/system-reality-alignment/skills/align-system/SKILL.md` concise. Put detailed doctrine, mode procedures, and examples in `references/`.
-- Keep the Codex and Claude Code manifests on the same semantic version.
-- Preserve cross-platform compatibility: shared skill frontmatter must use only `name` and `description` unless a platform-specific field is strictly necessary.
-- Do not add network access, MCP servers, or hooks unless the capability cannot be implemented safely as instructions or local deterministic scripts.
-- Treat the documents in `references/` as normative. Templates and scripts must remain consistent with them.
-- When changing required artifact sections, update the templates, validator, tests, README, and changelog in the same change.
+Local tests and evaluation preparation use disposable fixtures, have no production access, and require no network or model credentials. Run them, repair failures caused by the requested change, and rerun affected checks without asking for separate approval. Repository gate:
 
-## Required validation
-
-Run before considering a change complete:
-
-```bash
+```sh
 python3 scripts/validate_package.py
-python3 -m unittest discover -s plugins/system-reality-alignment/tests -v
 python3 -m unittest discover -s tests -v
 python3 scripts/build_release.py --output-dir dist
 ```
 
-When Claude Code is installed, also run:
-
-```bash
-claude plugin validate . --strict
-claude plugin validate ./plugins/system-reality-alignment --strict
-```
-
-## Release discipline
-
-- Update both plugin manifests.
-- Add a dated entry to `CHANGELOG.md`.
-- Rebuild both distributable ZIP files.
-- Let `scripts/build_release.py` validate both extracted ZIP files and produce `SHA256SUMS`.
-- Verify a clean Git tree and matching release-asset checksums before tagging.
+The package checker validates structure, not truth or model effectiveness. Keep evaluation rubrics outside exported task workspaces and release archives. Do not claim Astra/Fable runs unless they actually occurred. Read `evals/README.md` when changing behavioral evaluation; read `docs/design.md` when changing the scope or instruction design.

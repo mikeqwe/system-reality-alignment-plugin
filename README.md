@@ -1,185 +1,106 @@
-# System Reality Alignment Plugin
+# System Reality Alignment · v2
 
-A dual-compatible plugin for **Codex** and **Claude Code** that helps agents design, review, plan, repair, implement, operate, and evaluate software and socio-technical systems while keeping observations, data, decisions, actions, and outcomes traceable to reality.
+An instruction-only plugin for **Astra in Codex** and **Fable in Claude Code**. Improve systems whose recorded state, decisions, and success signals can diverge from real outcomes.
 
-The package uses one shared Agent Skill and thin platform manifests. It requires no MCP server, network access, background process, lifecycle hook, or runtime dependency.
+The original idea is about the system, not the agent: better order and meaningful data should make it easier to observe reality, detect a wrong model, and adapt. The practical unit is one loop:
 
-## Install
+`event → observation → state → decision → action → outcome → correction`
 
-### Claude Code
+Version 2.0.0 is a ground-up rewrite. It preserves the domain purpose and public invocation name, not the old mandatory procedures. **Behavioral benefit on Astra/Fable is not yet established.** The repository includes reproducible regression cases and a comparison protocol rather than claiming that passing package tests proves effectiveness.
 
-```bash
+## Use it
+
+```text
+$align-system Review whether our entitlement state reflects actual provider outcomes. Remain read-only; prioritize reachable failures and the smallest useful correction.
+
+$align-system Implement the agreed timeout recovery fix. Keep the public API, finish the local tests, and distinguish verified behavior from rollout assumptions.
+
+$align-system Design a minimal correction path for late and conflicting observations using our existing database.
+```
+
+For Claude Code, use `/system-reality-alignment:align-system` instead of `$align-system` when installed as a plugin. A plain manually copied Claude skill uses `/align-system`.
+
+The skill reads only the references relevant to the task. It does not require a system-wide audit, a separate report, an event-sourcing migration, a fixed subagent team, or a special model setting. Cosmetic edits and general code review are outside its automatic trigger.
+
+## Try this PR before merging
+
+Check out the PR branch in a separate clone. Commands below assume its repository root; `main` continues to contain v1.1 until the PR is merged. Disable the older installation in your host before testing, and avoid having both a plugin and a manual skill copy enabled.
+
+### Claude Code / Fable
+
+```sh
+SRA_REPO="$PWD"
+cd /path/to/target-project
+claude --plugin-dir "$SRA_REPO/plugins/system-reality-alignment"
+```
+
+Choose the Fable model available in your account using the host's model selector. The plugin does not change your selection, permissions, or effort.
+
+For a marketplace install after merge:
+
+```sh
 claude plugin marketplace add mikeqwe/system-reality-alignment-plugin
 claude plugin install system-reality-alignment@system-reality-tools
 ```
 
-Start a new session and invoke the skill explicitly:
+Start a fresh session after installation changes.
 
-```text
-/system-reality-alignment:align-system review the order lifecycle and produce a prioritized remediation plan
+### Codex / Astra
+
+For testing a checkout, install just the shared skill at the user scope:
+
+```sh
+SRA_REPO="$PWD"
+mkdir -p "$HOME/.agents/skills"
+ln -s "$SRA_REPO/plugins/system-reality-alignment/skills/align-system" \
+  "$HOME/.agents/skills/align-system"
 ```
 
-For direct development from a checkout:
+`ln` intentionally refuses to overwrite an existing destination. Disable/remove an older plugin through the host, or move a previous manual copy aside before retrying. Start Codex in the target project, select your Astra model, and invoke `$align-system`.
 
-```bash
-claude --plugin-dir ./plugins/system-reality-alignment
-```
+For repo-local installation, put the same skill directory in the target repository's `.agents/skills/align-system`. For marketplace discovery:
 
-### Codex
-
-```bash
+```sh
 codex plugin marketplace add mikeqwe/system-reality-alignment-plugin --ref main
-codex plugin add system-reality-alignment@system-reality-tools
 ```
 
-Start a new session and invoke:
+Install it through the host's plugin interface. Host surfaces differ; the direct skill path above avoids depending on a particular plugin-install CLI. Portable and compatibility manifests are included; native host loading still needs the smoke checks below. See [compatibility sources](docs/design.md#compatibility-and-model-guidance).
 
-```text
-$align-system review the payment state machine for semantic ambiguity, missing invariants, and broken feedback loops
-```
+## What is different from v1.1
 
-For repo-local authoring without installation, copy or symlink `plugins/system-reality-alignment/skills/align-system` into `.agents/skills/align-system`.
+| v1.1 | v2 |
+| --- | --- |
+| Mandatory standard + evidence documents + mode procedure | One compact entry point; four topic references loaded by relevance |
+| Required artifact sections and document validators | Existing PR/tests/runbook, with only decision-relevant evidence |
+| Seven formally selected modes | Task-driven design, review, planning, repair, implementation, operations, or evaluation |
+| Maturity and intervention-effect scoring machinery | No unsupported ratings; effectiveness assessed outside the runtime skill |
+| Large blanket completion gate | Complete the authorized deliverable and available relevant checks; bound unknown outcomes |
 
-## Requirements
+Retained: source authority and time semantics, real execution paths, independent mechanism boundaries, storage roles, per-effect retry safety, reconciliation populations, correction ownership, and separation of actions from outcomes. No hooks, MCP server, executable runtime, network dependency, telemetry, forced model selection, or automatic background activity.
 
-The skill itself is Markdown and runs through Codex or Claude Code. Python 3.11 or newer is needed only for optional artifact helpers, evaluation summaries, package validation, tests, and release builds.
+**Breaking change:** v1 artifact templates, `new_artifact.py`, `validate_artifact.py`, evaluation schema/summarizer, and old reference paths are removed. Existing generated documents are not deleted. Remove old workflow calls to those helpers; use normal repository tests and the new evaluation protocol. Do not concatenate the v1 standard into the v2 skill. The old implementation remains in Git history at `b4663d041a569acb702087750a54065d3a9486fb`.
 
-## Repository layout
+## Validate and evaluate
 
-```text
-.
-├── .agents/plugins/marketplace.json
-├── .claude-plugin/marketplace.json
-├── plugins/system-reality-alignment/
-│   ├── .codex-plugin/plugin.json
-│   ├── .claude-plugin/plugin.json
-│   └── skills/align-system/
-│       ├── SKILL.md
-│       ├── references/
-│       ├── assets/templates/
-│       ├── schemas/
-│       └── scripts/
-├── scripts/
-└── tests/
-```
+Python 3.11+ is needed only by the authoring/test tools, never by the installed skill.
 
-## Typical prompts
-
-```text
-$align-system design an auditable order fulfillment state model from the existing repository
-
-$align-system review this service boundary for data-contract, time-semantics, lineage, and reconciliation risks
-
-$align-system plan a staged migration from mutable status fields to evidence-backed derived state
-
-$align-system repair the duplicate-charge failure mode, including containment, reconciliation, backfill, tests, and rollout
-
-$align-system implement the agreed invariants and observability in this codebase
-
-$align-system define an operating scorecard for data quality, decision quality, and feedback-loop latency
-
-$align-system evaluate whether this plugin is useful, neutral, harmful, or still unknown for architecture reviews
-```
-
-## Analysis integrity
-
-Version 1.1 makes architectural claims reproducible and mechanism-specific. For material reviews, the skill now requires the agent to:
-
-- identify the exact revision under review and use real repository paths;
-- record the commands or queries behind counts and other derived claims;
-- inventory independently configured producers, channels, consumers, and acknowledgement paths instead of transferring guarantees between them;
-- trace actual execution paths, including synchronous calls, retries, swallowed exceptions, compensation, feature flags, and compatibility fallbacks;
-- describe reconciliation direction and the blind spots implied by its driving set;
-- classify persistence by role, such as live process state, rollback evidence, checkpoint, audit history, or derived cache;
-- prove replay safety per handler before recommending retry, redelivery, or a dead-letter path;
-- inspect inherited build configuration and transitive runtime dependencies;
-- check version-control provenance before calling a tracked artifact's origin unknown;
-- calculate maturity from explicit criteria and operational evidence, or report it as `NOT RATED`.
-
-See `plugins/system-reality-alignment/skills/align-system/references/analysis-verification.md` for the complete verification protocol.
-
-## Generated artifacts
-
-The skill covers system design, review, improvement planning, repair, implementation, operations, and intervention evaluation. It also includes decision-record and data-contract templates.
-
-Create and validate a review scaffold:
-
-```bash
-python3 plugins/system-reality-alignment/skills/align-system/scripts/new_artifact.py review \
-  --system "Payments" \
-  --output docs/system-reality/payments-review.md
-
-python3 plugins/system-reality-alignment/skills/align-system/scripts/validate_artifact.py review \
-  docs/system-reality/payments-review.md --strict
-```
-
-An untouched scaffold is intentionally incomplete and fails strict validation. The same strict validator enforces reproducibility, mechanism/storage inventories, and retry/replay applicability for `repair` and `implementation` artifacts.
-
-## Evaluate plugin or intervention impact
-
-Evaluation is segmented by mode and task cohort and uses four conclusions: `USEFUL`, `NEUTRAL`, `HARMFUL`, and `UNKNOWN`. A missing statistically visible improvement is not automatically neutral; neutral requires an equivalence interval within a predefined practical-effect band.
-
-Create an evaluation protocol:
-
-```bash
-python3 plugins/system-reality-alignment/skills/align-system/scripts/new_artifact.py evaluation \
-  --system "Architecture review workflow" \
-  --output docs/system-reality/plugin-evaluation.md
-```
-
-Summarize control and treatment runs stored as JSONL:
-
-```bash
-python3 plugins/system-reality-alignment/skills/align-system/scripts/summarize_evaluations.py \
-  evaluation-runs.jsonl \
-  --minimum-effect 0.15 \
-  --minimum-samples 5
-```
-
-The closed run-record contract is `plugins/system-reality-alignment/skills/align-system/schemas/evaluation-run.schema.json`. Treatment-arm hard guardrail events override an average metric improvement. Control-arm events are reported separately as baseline risk and may invalidate causal interpretation without automatically classifying the intervention as harmful.
-
-## Validate and build
-
-Run the complete local gate:
-
-```bash
+```sh
 python3 scripts/validate_package.py
-python3 -m unittest discover -s plugins/system-reality-alignment/tests -v
 python3 -m unittest discover -s tests -v
 python3 scripts/build_release.py --output-dir dist
 ```
 
-When Claude Code is installed, also run:
+The builder creates deterministic Codex and Claude Code ZIPs plus `SHA256SUMS`, checks extracted contents, and excludes evaluation answers and developer tools. In a machine with Claude Code installed, additionally run:
 
-```bash
+```sh
 claude plugin validate . --strict
 claude plugin validate ./plugins/system-reality-alignment --strict
 ```
 
-The release builder creates and validates:
+Then smoke-test actual invocation in a fresh Codex/Astra and Claude Code/Fable session. A local structural checker is not a vendor schema validator or a native-host test.
 
-- `system-reality-alignment-codex-v1.1.0.zip`
-- `system-reality-alignment-claude-code-v1.1.0.zip`
-- `SHA256SUMS`
+See [evaluation protocol and real-task prompt](evals/README.md), [design and original intent](docs/design.md), and [validation record](docs/validation.md). Package tests verify structure and fixture consistency, not prompt adherence or production outcomes.
 
-Each ZIP contains the shared skill and only the manifest for its target platform. The builder verifies the extracted archive before publishing any checksum.
+## License and contributions
 
-## Design principles
-
-The plugin enforces five operational distinctions:
-
-1. **Reality is not the same as stored state.**
-2. **Observations are not interpretations.**
-3. **Interpretations are not decisions.**
-4. **Decisions are not actions.**
-5. **Actions are not outcomes.**
-
-Unknown, conflicting, late, corrected, and unverified information remain explicit rather than being collapsed into premature certainty.
-
-## Contributing and security
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the development and pull-request gate. Report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE), [CONTRIBUTING.md](CONTRIBUTING.md), and [SECURITY.md](SECURITY.md).

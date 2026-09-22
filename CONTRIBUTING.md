@@ -1,36 +1,9 @@
 # Contributing
 
-Issues and pull requests are welcome when they keep the plugin small, evidence-driven, and compatible with both Codex and Claude Code.
+Preserve the original system-design goal and the instruction-only runtime. Explain which observed task failure or missing capability motivates a change. Prefer deleting redundant instructions to accumulating generic rules.
 
-## Before opening a change
+Run the repository gate from [AGENTS.md](AGENTS.md). For packaging changes, also validate the plugin with the actual installed host where available. Keep portable, Codex, and Claude manifests version-aligned. Preserve the CI job names `validate (3.11)` and `validate (3.x)`, which are required by the current branch protection.
 
-- Use an issue to describe material behavior or workflow changes before implementing them.
-- Do not report security vulnerabilities in public issues. Follow [SECURITY.md](SECURITY.md).
-- Keep the shared `SKILL.md` concise and put detailed doctrine or examples in `references/`.
-- Do not add network access, MCP servers, hooks, or runtime dependencies unless the capability cannot be implemented safely with instructions or deterministic local scripts.
+Behavioral changes need representative task evidence or an explicit `not run` limitation, not just passing package checks. See [evals/README.md](evals/README.md). Keep evaluator answers outside runtime archives. Do not commit private logs, credentials, source exports, or raw personal data.
 
-## Development
-
-Python 3.11 or newer is required only for the bundled helper, validation, test, and release scripts. The skill itself is Markdown.
-
-Run the complete local gate:
-
-```bash
-python3 scripts/validate_package.py
-python3 -m unittest discover -s plugins/system-reality-alignment/tests -v
-python3 -m unittest discover -s tests -v
-python3 scripts/build_release.py --output-dir dist
-```
-
-When Claude Code is installed, also run:
-
-```bash
-claude plugin validate . --strict
-claude plugin validate ./plugins/system-reality-alignment --strict
-```
-
-Do not commit `dist/`, bytecode, local marketplace caches, or editor metadata.
-
-## Pull requests
-
-Describe the observed problem, the evidence for the change, and how the result was verified. Keep unrelated refactors out of the pull request. If required artifact sections change, update the normative reference, templates, validator, tests, README, and changelog together.
+A PR should state the intended effect, changed behavior, performed checks, counterexamples, and remaining uncertainty. Do not merge or tag a release solely because document structure passed validation.

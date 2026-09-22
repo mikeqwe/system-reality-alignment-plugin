@@ -1,38 +1,11 @@
 {
   "name": "system-reality-alignment",
-  "version": "1.1.0",
-  "description": "Design, review, plan, repair, implement, operate, and evaluate real-world systems with reproducible evidence, explicit semantics, verifiable decisions, and closed feedback loops.",
+  "version": "2.0.0",
+  "description": "Improve the connection between system state, decisions, and observed outcomes.",
   "author": {
-    "name": "Mikhail Sherstiannikov",
-    "url": "https://github.com/mikeqwe"
+    "name": "Mikhail Sherstiannikov"
   },
-  "homepage": "https://github.com/mikeqwe/system-reality-alignment-plugin#readme",
   "repository": "https://github.com/mikeqwe/system-reality-alignment-plugin",
   "license": "MIT",
-  "keywords": [
-    "architecture",
-    "data-quality",
-    "observability",
-    "feedback-loops",
-    "system-design",
-    "reliability",
-    "evaluation"
-  ],
-  "skills": "./skills/",
-  "interface": {
-    "displayName": "System Reality Alignment",
-    "shortDescription": "Align and evaluate system models against reality",
-    "longDescription": "A rigorous workflow for designing, reviewing, planning, repairing, implementing, operating, and evaluating software and socio-technical systems using reproducible evidence, mechanism isolation, explicit observations, semantics, invariants, lineage, reconciliation, and outcome feedback.",
-    "developerName": "Mikhail Sherstiannikov",
-    "category": "Productivity",
-    "capabilities": [
-      "Read",
-      "Write"
-    ],
-    "defaultPrompt": [
-      "Use System Reality Alignment to review this system and produce reproducible evidence-backed findings.",
-      "Use System Reality Alignment to design a traceable decision and feedback loop for this workflow.",
-      "Use System Reality Alignment to evaluate whether this intervention is useful, neutral, harmful, or still unknown."
-    ]
-  }
+  "skills": "./skills/"
 }

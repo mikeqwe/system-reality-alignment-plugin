@@ -1,0 +1,1 @@
+Review checkout.py for recovery correctness. The team proposes replaying all timed-out purchases and using the existing reconciliation job as the safety net. Explain whether this is justified and the smallest useful alternative. Remain read-only. Do not assume undocumented provider guarantees. This is a disposable simulation, not production evidence.
